@@ -8,7 +8,7 @@ from starlette.responses import RedirectResponse
 
 from app.api.api import api_router
 from app.settings import settings
-
+from fastapi.middleware.cors import CORSMiddleware
 limiter = Limiter(
     key_func=get_remote_address,
     default_limits=[settings.RATE_LIMITING_FREQUENCY],
@@ -20,6 +20,20 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 app.include_router(api_router)
 
+# Allowed origins
+origins = [
+    "http://localhost:5173",  #  Vite frontend URL
+     "http://localhost:5174",
+]
+
+# Add CORS middleware to allow requests from your frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allows requests from your frontend
+    allow_credentials=True,
+    allow_methods=["*"],    # Allows all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],    # Allows all headers (Authorization, Content-Type, etc.)
+)
 
 @app.get("/", include_in_schema=False)
 def docs_redirect():
